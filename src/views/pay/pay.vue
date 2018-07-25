@@ -62,7 +62,7 @@
       </div>
     </transition>
     <!--扫码支付-->
-    <scan :payType="payType" :orderData="orderData" @close="scanShow = false;" v-show="scanShow"></scan>
+    <scan :payType="payType" :orderData="orderData" @close="scanShow = false" v-show="scanShow"></scan>
     <!--调用app支付-->
     <form action="http://pay.trsoft.xin/order/trpayGetWay" method="post" id="form" ref="form">
       <input type="hidden" name="amount" v-model=form_data.amount>
@@ -83,115 +83,115 @@
 </template>
 
 <script>
-import scan from './scan.vue'
-import {initPay, orderInfo} from '@/api/order'
-import {requestPay} from '@/api/order'
+  import scan from './scan.vue';
+  import {initPay, orderInfo} from '@/api/order';
+  import {requestPay} from '@/api/order';
 
-export default {
-  data () {
-    return {
-      restaurant_info: {
-        pic_url: ''
+  export default {
+    data() {
+      return {
+        restaurant_info: {
+          pic_url: ''
+        },
+        order_info: null,
+        order_id: null,
+        payType: '1', // 支付渠道
+        form_data: {},
+        seconds: '', // 倒计时秒
+        minutes: '', // 倒计时分
+        payWayShow: false,
+        preventRepeat: false, // 阻止多次点击
+        method: 'trpay.trade.create.scan', // 支付方式
+        scanShow: false,
+        orderData: {},
+        overtime: false, // 支付超时
+        alertText: '', // 提示
+        showTip: false
+      };
+    },
+    methods: {
+      submit() { // 提交支付
+        if (this.preventRepeat) {
+          return;
+        }
+        if (this.overtime) {
+          this.alertText = '支付超时';
+          this.showTip = true;
+          return;
+        }
+        this.preventRepeat = true; // 防止多次点击
+        initPay({order_id: this.order_id, payType: this.payType, method: this.method}).then((response) => {
+          let res = response.data;
+          this.preventRepeat = false;
+          if (res.status === -1) { // 支付接口出错
+            this.alertText = res.message; // 提示
+            this.showTip = true;
+            return;
+          }
+          if (res.status === 302) { // 判断该订单是否已经支付完成
+            let _this = this;
+            this.alertText = res.message; // 提示
+            this.showTip = true;
+            setTimeout(() => {
+              _this.$router.push('/order');
+            }, 1000);
+            return;
+          }
+
+          if (this.method === 'trpay.trade.create.scan') { // 扫码支付方式
+            this.orderData = response.data.data;
+            this.scanShow = true;
+          } else { // 调起APP支付
+            this.form_data = response.data.data;
+            this.$nextTick(() => {
+              this.$refs['form'].submit();
+            });
+          }
+        });
       },
-      order_info: null,
-      order_id: null,
-      payType: '1', // 支付渠道
-      form_data: {},
-      seconds: '', // 倒计时秒
-      minutes: '', // 倒计时分
-      payWayShow: false,
-      preventRepeat: false, // 阻止多次点击
-      method: 'trpay.trade.create.scan', // 支付方式
-      scanShow: false,
-      orderData: {},
-      overtime: false, // 支付超时
-      alertText: '', // 提示
-      showTip: false
-    }
-  },
-  methods: {
-    submit () { // 提交支付
-      if (this.preventRepeat) {
-        return
-      }
-      if (this.overtime) {
-        this.alertText = '支付超时'
-        this.showTip = true
-        return
-      }
-      this.preventRepeat = true // 防止多次点击
-      initPay({order_id: this.order_id, payType: this.payType, method: this.method}).then((response) => {
-        let res = response.data
-        this.preventRepeat = false
-        if (res.status === -1) { // 支付接口出错
-          this.alertText = res.message // 提示
-          this.showTip = true
-          return
+      calc_remain_time(remain_time) { // 倒计时
+        let minutes = (remain_time / 60 % 60);
+        this.minutes = minutes >= 10 ? minutes + '' : '0' + minutes;// 计算剩余的分钟
+        let seconds = (remain_time % 60);
+        this.seconds = seconds >= 10 ? seconds + '' : '0' + seconds;// 计算剩余的分钟;//计算剩余的秒数
+        if (!this.minutes && !this.seconds) {
+          clearInterval(this.timer);
+          this.overtime = true; // 支付超时
         }
-        if (res.status === 302) { // 判断该订单是否已经支付完成
-          let _this = this
-          this.alertText = res.message // 提示
-          this.showTip = true
-          setTimeout(() => {
-            _this.$router.push('/order')
-          }, 1000)
-          return
+      },
+      close() {
+        this.payWayShow = false;
+      },
+      selectPayType() {
+        if (this.overtime) {
+          this.alertText = '支付超时';
+          this.showTip = true;
+          return;
+        }
+        this.payWayShow = true;
+      }
+    },
+    mounted() {
+      let _this = this;
+      this.order_id = this.$route.query.order_id;
+      orderInfo({order_id: this.order_id}).then((response) => {
+        this.order_info = response.data.data;
+        let remain_time = response.data.data.pay_remain_time; // 支付剩余时间
+        this.restaurant_info = this.order_info.restaurant; // 商家信息
+        if (remain_time == false) {
+          this.overtime = true;
         }
 
-        if (this.method === 'trpay.trade.create.scan') { // 扫码支付方式
-          this.orderData = response.data.data
-          this.scanShow = true
-        } else { // 调起APP支付
-          this.form_data = response.data.data
-          this.$nextTick(() => {
-            this.$refs['form'].submit()
-          })
-        }
-      })
+        this.timer = setInterval(function () {
+          remain_time--;
+          _this.calc_remain_time(remain_time);
+        }, 1000);
+      });
     },
-    calc_remain_time (remain_time) { // 倒计时
-      let minutes = (remain_time / 60 % 60)
-      this.minutes = minutes >= 10 ? minutes + '' : '0' + minutes// 计算剩余的分钟
-      let seconds = (remain_time % 60)
-      this.seconds = seconds >= 10 ? seconds + '' : '0' + seconds// 计算剩余的分钟;//计算剩余的秒数
-      if (!this.minutes && !this.seconds) {
-        clearInterval(this.timer)
-        this.overtime = true // 支付超时
-      }
-    },
-    close () {
-      this.payWayShow = false
-    },
-    selectPayType () {
-      if (this.overtime) {
-        this.alertText = '支付超时'
-        this.showTip = true
-        return
-      }
-      this.payWayShow = true
+    components: {
+      scan
     }
-  },
-  mounted () {
-    let _this = this
-    this.order_id = this.$route.query.order_id
-    orderInfo({order_id: this.order_id}).then((response) => {
-      this.order_info = response.data.data
-      let remain_time = response.data.data.pay_remain_time // 支付剩余时间
-      this.restaurant_info = this.order_info.restaurant // 商家信息
-      if (remain_time == false) {
-        this.overtime = true
-      }
-
-      this.timer = setInterval(function () {
-        remain_time--
-        _this.calc_remain_time(remain_time)
-      }, 1000)
-    })
-  },
-  components: {
-    scan
-  }
-}
+  };
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>

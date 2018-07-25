@@ -91,46 +91,46 @@
 </template>
 
 <script>
-import {orderInfo} from '@/api/order'
+  import {orderInfo} from '@/api/order';
 
-export default {
-  data () {
-    return {
-      orderStatus: '', // 订单状态
-      statusDesc: '', // 状态描述
-      restaurantInfo: {}, // 餐馆信息
-      foods: [], // 食物列表
-      orderData: { // 订单数据
-        total_price: 0
-      },
-      address: {}, // 地址信息
-      alertText: '',
-      showTip: false
+  export default {
+    data() {
+      return {
+        orderStatus: '', // 订单状态
+        statusDesc: '', // 状态描述
+        restaurantInfo: {}, // 餐馆信息
+        foods: [], // 食物列表
+        orderData: { // 订单数据
+          total_price: 0
+        },
+        address: {}, // 地址信息
+        alertText: '',
+        showTip: false
+      };
+    },
+    created() {
+      let id = this.$route.query.id;
+      orderInfo({order_id: id}).then((response) => {
+        let res = response.data;
+        if (res.status === -1) {
+          this.alertText = '获取订单失败';
+          this.showTip = true;
+          return;
+        }
+        let data = this.orderData = res.data;
+        if (data.code === 200) {
+          this.orderStatus = '订单已完成';
+          this.statusDesc = '感谢您对美团外卖的支持，欢迎再次光临';
+        } else {
+          this.orderStatus = '订单已取消';
+          this.statusDesc = '支付超时，订单已取消';
+        }
+        this.restaurantInfo = data.restaurant;
+        this.foods = data.foods;
+        this.address = data.address;
+      });
     }
-  },
-  created () {
-    let id = this.$route.query.id
-    orderInfo({order_id: id}).then((response) => {
-      let res = response.data
-      if (res.status === -1) {
-        this.alertText = '获取订单失败'
-        this.showTip = true
-        return
-      }
-      let data = this.orderData = res.data
-      if (data.code === 200) {
-        this.orderStatus = '订单已完成'
-        this.statusDesc = '感谢您对美团外卖的支持，欢迎再次光临'
-      } else {
-        this.orderStatus = '订单已取消'
-        this.statusDesc = '支付超时，订单已取消'
-      }
-      this.restaurantInfo = data.restaurant
-      this.foods = data.foods
-      this.address = data.address
-    })
-  }
-}
+  };
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>

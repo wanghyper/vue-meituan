@@ -1,9 +1,10 @@
-import config from '../config'
-import router from '@/router'
-import {removeInfo} from '@/utils/auth'
+import config from '../config';
+import router from '@/router';
+import {removeInfo} from '@/utils/auth';
+import Axios from 'axios'
 
-const baseURL = config.baseURL
-const axios = require('axios').create({
+const baseURL = config.baseURL;
+const axios = Axios.create({
   baseURL: baseURL, // api请求的baseURL
   timeout: 0,
   withCredentials: true, // 允许跨域 cookie
@@ -11,39 +12,39 @@ const axios = require('axios').create({
   maxContentLength: 2000,
   transformResponse: [function (data) {
     try {
-      data = JSON.parse(data)
+      data = JSON.parse(data);
     } catch (e) {
-      data = {}
+      data = {};
     }
     if (data.status === 403) {
-      removeInfo()
-      router.push('/login')
+      removeInfo();
+      router.push('/login');
     }
-    return data
+    return data;
   }]
-})
+});
 
 // get
 export const _get = (req) => {
-  return axios.get(req.url, {params: req.data})
-}
+  return axios.get(req.url, {params: req.data});
+};
 
 // post
 export const _post = (req) => {
-  return axios({method: 'post', url: `/${req.url}`, data: req.data})
-}
+  return axios({method: 'post', url: `/${req.url}`, data: req.data});
+};
 
 // patch
 export const _put = (req) => {
-  return axios({method: 'put', url: `/${req.url}`, data: req.data})
-}
+  return axios({method: 'put', url: `/${req.url}`, data: req.data});
+};
 
 // delete
 export const _delete = (req) => {
-  return axios({method: 'delete', url: `/${req.url}`, data: req.data})
-}
+  return axios({method: 'delete', url: `/${req.url}`, data: req.data});
+};
 
 // post and no withCredentials
 export const _postNoWithCredentials = (req) => {
-  return axios({method: 'post', url: `/${req.url}`, data: req.data, withCredentials: false})
-}
+  return axios({method: 'post', url: `/${req.url}`, data: req.data, withCredentials: false});
+};

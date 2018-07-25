@@ -92,80 +92,84 @@
 </template>
 
 <script>
-import {getRestaurant} from '@/api/restaurant'
-import {getAllAddress} from '@/api/user'
-import {submitOrder} from '@/api/order'
-import {mapGetters} from 'vuex'
+  import {getRestaurant} from '@/api/restaurant';
+  import {getAllAddress} from '@/api/user';
+  import {submitOrder} from '@/api/order';
+  import {mapGetters} from 'vuex';
 
-export default {
-  data () {
-    return {
-      order_data: null,
-      defineAddress: {},
-      poi_info: null,
-      totalPrice: 0,
-      totalNum: 0,
-      restaurant_id: null,
-      emptyAddress: true, // 还没有收货地址 需要新增
-      alertText: '',
-      showTip: false,
-      preventRepeat: false
-    }
-  },
-  computed: {
-    ...mapGetters(['deliveryAddress']),
-    gender () {
-      return this.defineAddress.gender === 'male' ? '先生' : '女士'
-    }
-  },
-  methods: {
-    submit () {
-      if (this.emptyAddress) { // 如果没有填收货地址
-        this.alertText = '请添加收货地址'
-        this.showTip = true
-        return
+  export default {
+    data() {
+      return {
+        order_data: null,
+        defineAddress: {},
+        poi_info: null,
+        totalPrice: 0,
+        totalNum: 0,
+        restaurant_id: null,
+        emptyAddress: true, // 还没有收货地址 需要新增
+        alertText: '',
+        showTip: false,
+        preventRepeat: false
+      };
+    },
+    computed: {
+      ...mapGetters(['deliveryAddress']),
+      gender() {
+        return this.defineAddress.gender === 'male' ? '先生' : '女士';
       }
-      if (this.preventRepeat) { return }
-      this.preventRepeat = true
-      let foods = []
-      let keys = Object.keys(this.order_data)
-      keys.forEach((key) => {
-        if (Number(key)) { foods.push({skus_id: key, num: this.order_data[key]['num']}) }
-      })
-      submitOrder({restaurant_id: this.restaurant_id, foods, address_id: this.defineAddress.id}).then((response) => {
-        if (response.data.status === 200) {
-          this.$router.push({path: '/pay', query: {order_id: response.data.order_id}})
+    },
+    methods: {
+      submit() {
+        if (this.emptyAddress) { // 如果没有填收货地址
+          this.alertText = '请添加收货地址';
+          this.showTip = true;
+          return;
         }
-      })
-    }
-  },
-  created () {
-    let confirmOrderData = JSON.parse(localStorage.getItem('confirmOrderData')) // 获取当前准备下单的商品
-    this.restaurant_id = confirmOrderData.restaurant_id // 餐馆id
-    this.totalNum = confirmOrderData.foods.totalNum // 总数量
-    this.order_data = confirmOrderData.foods // 食物信息
-    // 获取用户收货地址
-    getAllAddress().then((response) => {
-      let data = response.data
-      if (data.address.length) { // 判断该用户有没有收货地址
-        this.emptyAddress = false
-        this.defineAddress = data.address[0] // 默认第一个为默认收获地址
-      } else {
-        this.emptyAddress = true
+        if (this.preventRepeat) {
+          return;
+        }
+        this.preventRepeat = true;
+        let foods = [];
+        let keys = Object.keys(this.order_data);
+        keys.forEach((key) => {
+          if (Number(key)) {
+            foods.push({skus_id: key, num: this.order_data[key]['num']});
+          }
+        });
+        submitOrder({restaurant_id: this.restaurant_id, foods, address_id: this.defineAddress.id}).then((response) => {
+          if (response.data.status === 200) {
+            this.$router.push({path: '/pay', query: {order_id: response.data.order_id}});
+          }
+        });
       }
-    })
-    // 根据商店id获取店家信息
-    getRestaurant({restaurant_id: this.restaurant_id}).then((response) => {
-      this.poi_info = response.data.data
-      this.totalPrice = Number(confirmOrderData.foods.totalPrice).toFixed(2) // 总价格
-    })
-  },
-  watch: {
-    deliveryAddress (address) {
-      this.defineAddress = address
+    },
+    created() {
+      let confirmOrderData = JSON.parse(localStorage.getItem('confirmOrderData')); // 获取当前准备下单的商品
+      this.restaurant_id = confirmOrderData.restaurant_id; // 餐馆id
+      this.totalNum = confirmOrderData.foods.totalNum; // 总数量
+      this.order_data = confirmOrderData.foods; // 食物信息
+      // 获取用户收货地址
+      getAllAddress().then((response) => {
+        let data = response.data;
+        if (data && data.address.length) { // 判断该用户有没有收货地址
+          this.emptyAddress = false;
+          this.defineAddress = data.address[0]; // 默认第一个为默认收获地址
+        } else {
+          this.emptyAddress = true;
+        }
+      });
+      // 根据商店id获取店家信息
+      getRestaurant({restaurant_id: this.restaurant_id}).then((response) => {
+        this.poi_info = response.data.data;
+        this.totalPrice = Number(confirmOrderData.foods.totalPrice).toFixed(2); // 总价格
+      });
+    },
+    watch: {
+      deliveryAddress(address) {
+        this.defineAddress = address;
+      }
     }
-  }
-}
+  };
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>

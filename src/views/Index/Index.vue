@@ -22,13 +22,12 @@
         <h2>附近商家</h2>
         <span class="line"></span>
       </div>
-      <nearby-shops :scrollWrapper="scrollWrapper" v-if="locationReady"></nearby-shops>
+      <nearby-shops :scrollWrapper="scrollWrapper" v-if="locationReady"/>
     </div>
     <!--小购物车-->
-    <little-cart>
-    </little-cart>
+    <little-cart/>
     <!--主页底部-->
-    <v-bottom></v-bottom>
+    <v-bottom/>
   </div>
 </template>
 

@@ -1,7 +1,7 @@
 <!--搜索餐馆-->
 <template>
   <div class="search-foods">
-    <v-head title="搜索" goBack=true></v-head>
+    <v-head title="搜索" goBack="true"/>
     <search placeholder="请输入商品 店铺名" title="选择收货地址" :fun_click="fun_click"></search>
     <div class="lists">
       <ul>
@@ -21,45 +21,47 @@
 </template>
 
 <script>
-import {searchRestaurant} from '@/api/restaurant'
-import search from '@/components/search.vue'
+  import {searchRestaurant} from '@/api/restaurant';
+  import search from '@/components/search.vue';
 
-export default {
-  data () {
-    return {
-      keyword: '',
-      searchList: [],
-      alertText: '',
-      showTip: false
-    }
-  },
-  methods: {
-    fun_click (val) {
-      if (!val) { return }
-      this.keyword = val
-      searchRestaurant({keyword: val}).then((response) => {
-        let res = response.data
-        if (res.status === 200) {
-          if (res.data.length) {
-            this.searchList = res.data
-          } else {
-            this.alertText = '找不到该餐馆，输入汉堡试试'
-            this.showTip = true
-          }
-        } else {
-          this.alertText = res.message
-          this.showTip = true
-        }
-      })
+  export default {
+    data () {
+      return {
+        keyword: '',
+        searchList: [],
+        alertText: '',
+        showTip: false
+      };
     },
-    high_light: function (value) {
-      return value.replace(this.keyword, `<span style="color:#ffd161;">${this.keyword}</span>`)
+    methods: {
+      fun_click(val) {
+        if (!val) {
+          return;
+        }
+        this.keyword = val;
+        searchRestaurant({keyword: val}).then((response) => {
+          let res = response.data;
+          if (res.status === 200) {
+            if (res.data.length) {
+              this.searchList = res.data;
+            } else {
+              this.alertText = '找不到该餐馆，输入汉堡试试';
+              this.showTip = true;
+            }
+          } else {
+            this.alertText = res.message;
+            this.showTip = true;
+          }
+        });
+      },
+      high_light: function (value) {
+        return value.replace(this.keyword, `<span style="color:#ffd161;">${this.keyword}</span>`);
+      }
+    },
+    components: {
+      search
     }
-  },
-  components: {
-    search
-  }
-}
+  };
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>

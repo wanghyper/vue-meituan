@@ -1,5 +1,5 @@
 import * as types from '../mutation-types';
-import {location} from '@/api/location';
+import {getLocation} from '@/api/BMap'
 
 const state = {
   lat: '', // 当前位置纬度
@@ -24,13 +24,10 @@ const actions = {
     commit(types.CLEAR_ADDRESS);
   },
   location({commit, state}) {
-    location().then((response) => {
-      if (response.data.status === 200) {
-        let data = response.data.data;
-        commit(types.RECORD_ADDRESS, {address: data.address, ...data.location}); // 保存title 和 经纬度到VUEX中
+    getLocation().then((data) => {
+      if (data) {
+        commit(types.RECORD_ADDRESS, {address: data.address.city, lat:data.lat, lng: data.lng}); // 保存city 和 经纬度到VUEX中
         commit(types.LOCATION_READY, true); // 定位完成 拉取商店
-      } else {
-      
       }
     });
   },

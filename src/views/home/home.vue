@@ -5,7 +5,7 @@
     <div id="user-info">
       <label class="avatar" for="file">
         <img :src="avatar">
-        <input id="file" type="file" @change="fileUpload($event)" style="display: none;">
+        <input id="file" class="needsclick" type="file" @change="fileUpload($event)" style="display: none;">
       </label>
       <router-link v-if="!username" class="login" to="/login">登录/注册</router-link>
       <span v-else class="username">{{username}}</span>
@@ -50,130 +50,131 @@
 </template>
 
 <script>
-import {userInfo, changeAvatar} from '@/api/user'
-import {getInfo} from '@/utils/auth'
-import {uploadToken, upload} from '@/api/upload'
-import config from '@/config'
+  import {userInfo, changeAvatar} from '@/api/user';
+  import {getInfo} from '@/utils/auth';
+  import {uploadToken, upload} from '@/api/upload';
+  import config from '@/config';
 
-export default {
-  data () {
-    return {
-      username: null,
-      avatar: 'http://i.waimai.meituan.com/static/img/default-avatar.png',
-      loading: false,
-      alertText: '',
-      showTip: false,
-      myFunList: [
-        {
-          url: '/home/collection',
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/9c1388ba5fbb367c1a93996f39c2fba94506.jpg',
-          name: '我的收藏'
-        },
-        {
-          url: '/home/footprint',
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/7ad7da19bfadd5e6081b7606025214254582.jpg',
-          name: '我的足迹'
-        },
-        {
-          url: '/home/comment',
-          picUrl: 'http://p0.meituan.net/50.0.100/xianfu/5d02f44df0f9f26ea0eca95957824bae4444.jpg',
-          name: '我的评价'
-        },
-        {
-          url: '/home/friend',
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/bbae84a587711ac12badb9453406ad694851.jpg',
-          name: '我的好友'
-        },
-        {
-          url: '/home/thank',
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/5c1bf832376403ca2ab22b8d8748e0fd5479.jpg',
-          name: '答谢记录'
-        },
-        {
-          url: '/home/address',
-          picUrl: 'http://p0.meituan.net/50.0.100/xianfu/a813bff1813024b05ff45422deac24bd4276.jpg',
-          name: '我的地址'
-        }],
-      myAssetsList: [
-        {
-          name: '红包',
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/a361ce97f9f00f2715bb960a789d925e2315.jpg'
-        },
-        {
-          name: '代金券',
-          picUrl: 'http://p0.meituan.net/50.0.100/xianfu/875f13a76045b7f6862a2b7149babec32329.jpg'
-        },
-        {
-          name: '钱包',
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/2c14b3425c7bf1f3d63d11f47a7ef9ea2230.jpg'
-        },
-        {
-          name: '余额',
-          picUrl: 'http://p0.meituan.net/50.0.100/xianfu/7b3e3fb4fc9b45dcda74d7e916f025ea2878.jpg'
-        }
-      ],
-      introList: [
-        {
-          picUrl: 'http://p0.meituan.net/50.0.100/xianfu/cf5ddfcae114ed8d7d147d51064532252477.jpg',
-          name: '邀请有奖'
-        },
-        {
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/55748d5fa531a057258f68d029fe20542466.jpg',
-          name: '商家入驻'
-        },
-        {
-          picUrl: 'http://p1.meituan.net/50.0.100/xianfu/317aabdd31dfcfa1739149089a2e041a2780.jpg',
-          name: '帮助与反馈'
-        },
-        {
-          picUrl: 'http://p0.meituan.net/50.0.100/xianfu/55454d4faaed6ad212b2b8a929edef372425.jpg',
-          name: '在线客服'
-        }
-      ]
-    }
-  },
-  methods: {
-    fileUpload (event) {
-      this.loading = true
-      let file = event.target.files[0]
-      if (file.size > 1024 * 1024 * 3) { // 只能传2M以内照片
-        this.alertText = '上传失败，只能传2M以内图片'
-        this.showTip = true
-      } else {
-        uploadToken().then((response) => {
-          if (response.data.status === 200) {
-            let data = {token: response.data.uptoken, file}
-            upload(data).then((upResponse) => {
-              let pic_url = config.domain + upResponse.data.key
-              this.avatar = pic_url
-              this.loading = false
-              changeAvatar({pic_url}).then((updateResponse) => {
-              }) // 更新到数据库
-            })
-          } else {
-            this.alertText = response.data.message
-            this.showTip = true
+  export default {
+    data() {
+      return {
+        username: null,
+        avatar: 'http://i.waimai.meituan.com/static/img/default-avatar.png',
+        loading: false,
+        alertText: '',
+        showTip: false,
+        myFunList: [
+          {
+            url: '/home/collection',
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/9c1388ba5fbb367c1a93996f39c2fba94506.jpg',
+            name: '我的收藏'
+          },
+          {
+            url: '/home/footprint',
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/7ad7da19bfadd5e6081b7606025214254582.jpg',
+            name: '我的足迹'
+          },
+          {
+            url: '/home/comment',
+            picUrl: 'http://p0.meituan.net/50.0.100/xianfu/5d02f44df0f9f26ea0eca95957824bae4444.jpg',
+            name: '我的评价'
+          },
+          {
+            url: '/home/friend',
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/bbae84a587711ac12badb9453406ad694851.jpg',
+            name: '我的好友'
+          },
+          {
+            url: '/home/thank',
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/5c1bf832376403ca2ab22b8d8748e0fd5479.jpg',
+            name: '答谢记录'
+          },
+          {
+            url: '/home/address',
+            picUrl: 'http://p0.meituan.net/50.0.100/xianfu/a813bff1813024b05ff45422deac24bd4276.jpg',
+            name: '我的地址'
+          }],
+        myAssetsList: [
+          {
+            name: '红包',
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/a361ce97f9f00f2715bb960a789d925e2315.jpg'
+          },
+          {
+            name: '代金券',
+            picUrl: 'http://p0.meituan.net/50.0.100/xianfu/875f13a76045b7f6862a2b7149babec32329.jpg'
+          },
+          {
+            name: '钱包',
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/2c14b3425c7bf1f3d63d11f47a7ef9ea2230.jpg'
+          },
+          {
+            name: '余额',
+            picUrl: 'http://p0.meituan.net/50.0.100/xianfu/7b3e3fb4fc9b45dcda74d7e916f025ea2878.jpg'
           }
-        })
+        ],
+        introList: [
+          {
+            picUrl: 'http://p0.meituan.net/50.0.100/xianfu/cf5ddfcae114ed8d7d147d51064532252477.jpg',
+            name: '邀请有奖'
+          },
+          {
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/55748d5fa531a057258f68d029fe20542466.jpg',
+            name: '商家入驻'
+          },
+          {
+            picUrl: 'http://p1.meituan.net/50.0.100/xianfu/317aabdd31dfcfa1739149089a2e041a2780.jpg',
+            name: '帮助与反馈'
+          },
+          {
+            picUrl: 'http://p0.meituan.net/50.0.100/xianfu/55454d4faaed6ad212b2b8a929edef372425.jpg',
+            name: '在线客服'
+          }
+        ]
+      };
+    },
+    methods: {
+      fileUpload(event) {
+        let file = event.target.files[0];
+        console.log(file);
+        if (file.size > 1024 * 1024 * 3 || !file.type.match(/image/)) { // 只能传2M以内照片
+          this.alertText = '上传失败，只能传2M以内图片';
+          this.showTip = true;
+        } else {
+          this.loading = true;
+          uploadToken().then((response) => {
+            if (response.data.status === 200) {
+              let data = {token: response.data.uptoken, file};
+              upload(data).then((upResponse) => {
+                let pic_url = config.domain + upResponse.data.key;
+                this.avatar = pic_url;
+                this.loading = false;
+                changeAvatar({pic_url}).then((updateResponse) => {
+                }); // 更新到数据库
+              });
+            } else {
+              this.alertText = response.data.message;
+              this.showTip = true;
+            }
+          });
+        }
+      },
+      routerChange(url) {
+        if (this.username) {
+          this.$router.push(url);
+        } else {
+          this.$router.push('/login');
+        }
       }
     },
-    routerChange (url) {
+    mounted() {
+      this.username = getInfo();
       if (this.username) {
-        this.$router.push(url)
-      } else {
-        this.$router.push('/login')
+        userInfo().then((response) => {
+          this.avatar = response.data.data.avatar;
+        });
       }
     }
-  },
-  mounted () {
-    this.username = getInfo()
-    if (this.username) {
-      userInfo().then((response) => {
-        this.avatar = response.data.data.avatar
-      })
-    }
-  }
-}
+  };
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
@@ -270,6 +271,7 @@ export default {
       }
     }
   }
+
   .intro {
     padding-bottom: 1rem;
   }
